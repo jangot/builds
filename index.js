@@ -52,6 +52,7 @@ function drawBuilds(builds) {
         var h = builds[i][1];
         context.rect(x, y, w, h);
 
+        context.lineWidth = 1;
         context.strokeStyle = 'black';
         context.stroke();
     }
@@ -288,8 +289,8 @@ function random() {
     var context = canvas.getContext('2d');
     context.clearRect (0 , 0 , CANVAS_WIDTH, CANVAS_HEIGHT);
     context.restore();
-    drawBuilds(builds);
     contour(builds);
+    drawBuilds(builds);
 
     document.getElementById('c').innerHTML = JSON.stringify(builds);
 }
