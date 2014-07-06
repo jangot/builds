@@ -2,6 +2,21 @@ var CANVAS_HEIGHT = 500;
 var CANVAS_WIDTH = 1000;
 var canvas = document.getElementById('canvas');
 
+function getRectList(builds) {
+    var result = [];
+
+    for (var i = 0; i < builds.length; i++) {
+        result.push([
+            [builds[i][0], 0],
+            [builds[i][0], builds[i][1]],
+            [builds[i][0] + builds[i][2], builds[i][1]],
+            [builds[i][0] + builds[i][2], 0]
+        ])
+    }
+
+    return result;
+}
+
 function drawLine(points, color) {
     if (!points) {
         points = [];
@@ -37,7 +52,7 @@ function drawBuilds(builds) {
         var h = builds[i][1];
         context.rect(x, y, w, h);
 
-        context.strokeStyle = builds[i][3] || 'black';
+        context.strokeStyle = 'black';
         context.stroke();
     }
 }
@@ -45,81 +60,6 @@ function drawBuilds(builds) {
 /**
  * Algorithm
  */
-
-function pointInFigure(point, figure) {
-    var cross = 0;
-    for (var i = 0; i < figure.length; i++) {
-        var figurePoint1 = figure[i];
-        var figurePoint2 = figure[i + 1] || figure[0];
-
-        if (point[1] < figurePoint1[1] && point[1] < figurePoint2[1]) {
-            cross++
-        }
-    }
-
-    return Boolean(cross % 2);
-}
-
-function pointCrossSegment(point, segment) {
-    var ax1 = segment[0][0];
-    var ax2 = segment[1][0];
-    var ay1 = segment[0][1];
-    var ay2 = segment[1][1];
-    var bx1 = point[0];
-    var bx2 = 0;
-    var by1 = point[1];
-    var by2 = point[1];
-
-    var v1 = (bx2-bx1)*(ay1-by1)-(by2-by1)*(ax1-bx1);
-    var v2 = (bx2-bx1)*(ay2-by1)-(by2-by1)*(ax2-bx1);
-    var v3= (ax2-ax1)*(by1-ay1)-(ay2-ay1)*(bx1-ax1);
-    var v4= (ax2-ax1)*(by2-ay1)-(ay2-ay1)*(bx2-ax1);
-
-    return (v1*v2<0) && (v3*v4<0);
-}
-
-function getCrossesSegment(segment1, segment2) {
-    var x1 = segment1[0][0];
-    var x2 = segment1[1][0];
-    var x3 = segment2[0][0];
-    var x4 = segment2[1][0];
-
-    var y1 = segment1[0][1];
-    var y2 = segment1[1][1];
-    var y3 = segment2[0][1];
-    var y4 = segment2[1][1];
-
-    var Ua=((x4-x3)*(y1-y3)-(y4-y3)*(x1-x3))/((y4-y3)*(x2-x1)-(x4-x3)*(y2-y1));
-    var Ub=((x2-x1)*(y1-y3)-(y2-y1)*(x1-x3))/((y4-y3)*(x2-x1)-(x4-x3)*(y2-y1));
-
-    var x=x3+Ub*(x4-x3);
-    var y=y3+Ub*(y4-y3);
-
-    return [[x, y], Ua, Ub]
-}
-
-
-var s1 = [[1, 1], [2, 2]];
-var s2 = [[5, 1], [2, 2]];
-
-function segmentsCrosses(segment1, segment2) {
-    var x1 = segment1[0][0];
-    var x2 = segment1[1][0];
-    var x3 = segment2[0][0];
-    var x4 = segment2[1][0];
-
-    var y1 = segment1[0][1];
-    var y2 = segment1[1][1];
-    var y3 = segment2[0][1];
-    var y4 = segment2[1][1];
-
-    var Ua=((x4-x3)*(y1-y3)-(y4-y3)*(x1-x3))/((y4-y3)*(x2-x1)-(x4-x3)*(y2-y1));
-    var Ub=((x2-x1)*(y1-y3)-(y2-y1)*(x1-x3))/((y4-y3)*(x2-x1)-(x4-x3)*(y2-y1));
-
-
-    return (0 <= Ua && Ua <= 1 && 0 <= Ub && Ub <= 1);
-}
-
 function getCrossPoint(segment1, segment2) {
     var x1 = segment1[0][0];
     var x2 = segment1[1][0];
@@ -138,13 +78,13 @@ function getCrossPoint(segment1, segment2) {
     var bZN = ((y4-y3)*(x2-x1)-(x4-x3)*(y2-y1));
 
     if (aZN == 0) {
-        return null;
+         return null;
     }
 
     var Ua=aCH/aZN;
     var Ub=bCH/bZN;
 
-    var cross = (0 < Ua && Ua < 1 && 0 < Ub && Ub < 1);
+    var cross = (0 <= Ua && Ua <= 1 && 0 <= Ub && Ub <= 1);
 
     if (!cross) {
         return null;
@@ -153,97 +93,71 @@ function getCrossPoint(segment1, segment2) {
     var x = x1 + Ua * (x2 - x1);
     var y = y1 + Ua * (y2 - y1);
 
-
-    return [x, y];
-}
-
-function pointFromArea(point, area) {
-    var crossCount = 0;
-    var pointSegment = [point, [0, point[1]]];
-    for (var i = 0; i < area.length; i++) {
-        var point1 = area[i];
-        var point2 = area[i + 1] || area[0];
-
-        var segmentOfArea = [point1, point2];
-
-        if (segmentsCrosses(segmentOfArea, pointSegment)) {
-            crossCount++;
-        }
-    }
-    return Boolean(crossCount % 2);
+    return [Math.floor(x), Math.floor(y)];
 }
 
 function isOnePoint(point1, point2) {
     return point1[0] == point2[0] && point1[1] == point2[1];
 }
 
+function isPositiveAngle(center, point1, point2) {
+    var x1 = point1[0] - center[0],
+        y1 = point1[1] - center[1];
+    var x2 = point2[0] - center[0],
+        y2 = point2[1] - center[1];
+
+    var angle = Math.atan(y2 - y1, x2 - x1) / Math.PI * 180;
+    return angle > 0;
+}
+
 function joinPoints(area1, area2) {
-    // Check 3 equal areas
-    var area2Equal = 0;
-    for (var k = 0; k < area2.length - 1; k++) {
-        if (area2[k][2]) {
-            area2Equal++;
-        }
-    }
-    if (area2Equal == area2.length - 1) {
-        return area1;
-    }
+    var result = [area1[0]];
+    var currentArea = area1;
+    var checkingArea = area2;
+    var index = 0;
+    var currentPoint = currentArea[index];
 
     var MAX = 1000;
     var count = 0;
-
-    var result = [];
-    var currentArea = null;
-    var checkingArea = null;
-    var position = 0;
-
-    if (area1[0][2] && area2[1][1] > area1[1][1]) {
-        currentArea = area2;
-        checkingArea = area1;
-        result.push(currentArea[0]);
-        position = 0;
-
-    } else {
-        currentArea = area1;
-        checkingArea = area2;
-        result.push(currentArea[0]);
-        position = 0;
-    }
-
-    var final = true;
     do {
-        position++;
-        var currentPoint = currentArea[position];
+        index++;
+        var nextCurrent = currentArea[index];
+        var nextChecking = null;
+        var checkingIndex = null;
+
+        dance:
+        for (var i = 0; i < checkingArea.length; i++) {
+            if (isOnePoint(currentPoint, checkingArea[i])) {
+                checkingIndex = i;
+
+                nextChecking = checkingArea[i + 1];
+                break dance;
+            }
+        }
+
+        if (nextChecking && isPositiveAngle(currentPoint, nextCurrent, nextChecking)) {
+            currentPoint = nextChecking;
+
+            var oldCurrent = currentArea;
+            currentArea = checkingArea;
+            checkingArea = oldCurrent;
+            index = checkingIndex
+        } else {
+            currentPoint = nextCurrent;
+        }
+
         result.push(currentPoint);
 
-        if (currentPoint[1] == 0) {
-            final = true;
-            break;
-        }
-
-        var find = false;
-        for (var i = 0; i < checkingArea.length; i++) {
-            if (find) {
-                continue
-            }
-            if (isOnePoint(currentPoint, checkingArea[i])) {
-                find = true;
-                var oldCurrent = currentArea;
-                currentArea = checkingArea;
-                checkingArea = oldCurrent;
-                position = i;
-            }
-        }
         // STOTOG
         count++;
         if (MAX == count) {
-            final = false;
-            throw "MAX!!!";
+            currentPoint[1] = 0;
+            throw Error("MAX count");
         }
-    } while (final);
+    } while (currentPoint[1] != 0);
+
     return result;
 }
-
 function joinCrossAreas(area1, area2) {
     var newArea1 = [];
     var newArea2AdditionPoints = [];
@@ -262,8 +176,12 @@ function joinCrossAreas(area1, area2) {
             ];
             var crossPoint = getCrossPoint(segment1, segment2);
             if (crossPoint) {
-                newArea1.push(crossPoint);
-                newArea2AdditionPoints.push([j, crossPoint]);
+                if (!isOnePoint(crossPoint, segment1[0]) && !isOnePoint(crossPoint, segment1[1])) {
+                    newArea1.push(crossPoint);
+                }
+                if (!isOnePoint(crossPoint, segment2[0]) && !isOnePoint(crossPoint, segment2[1])) {
+                    newArea2AdditionPoints.push([j, crossPoint]);
+                }
             }
         }
     }
@@ -278,29 +196,14 @@ function joinCrossAreas(area1, area2) {
 }
 
 function amountAreas(area1, area2) {
-    var isCross = false;
+    var area1X1 = area1[0][0];
+    var area2X1 = area2[0][0];
+    var area1XLast = area1[area1.length - 1][0];
 
-    for (var i = 0; i < area1.length; i++) {
-        var pointInArea2 = pointFromArea(area1[i], area2);
-        if (pointInArea2) {
-            area1[i].push(true);
-            isCross = true;
-        }
-    }
-
-    for (var j = 0; j < area2.length; j++) {
-        var pointInArea1 = pointFromArea(area2[j], area1);
-        if (pointInArea1) {
-            area2[j].push(true);
-            isCross = true;
-        }
-    }
-
-    if (!isCross) {
-        return [area1, area2];
+    if (area1X1 <= area2X1 && area2X1 <= area1XLast) {
+        return [joinCrossAreas(area1, area2)];
     } else {
-        var jn = joinCrossAreas(area1, area2);
-        return [jn]
+        return [area1, area2];
     }
 }
 
@@ -343,40 +246,57 @@ function contour(builds) {
     drawContourByFigures(drawingFigures);
 }
 
+/*
+ * Default data
+ */
+function getRandomInt(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-function getRectList(builds) {
+
+function getRandomBuild() {
+    var MIN_WIDTH = 30;
+    var MIN_HEIGHT = 2
     var result = [];
 
-    for (var i = 0; i < builds.length; i++) {
-        result.push([
-            [builds[i][0], 0],
-            [builds[i][0], builds[i][1]],
-            [builds[i][0] + builds[i][2], builds[i][1]],
-            [builds[i][0] + builds[i][2], 0]
-        ])
-    }
+    var left = getRandomInt(20, CANVAS_WIDTH - MIN_WIDTH);
+    result.push(left);
+
+    var width = getRandomInt(MIN_HEIGHT, CANVAS_HEIGHT);
+    result.push(width);
+
+
+    var maxWidth = (CANVAS_WIDTH - result[0] - 20);
+    result.push(getRandomInt(MIN_WIDTH, maxWidth));
 
     return result;
 }
 
-/*
- * Default data
- */
-var builds = [
-    [220, 140, 50, 'red'],
-    [220, 110, 70, 'green'],
-    [200, 70, 400, 'orange'],
-    [420, 160, 20, 'gold'],
-    [740, 20, 10],
-    [230, 30, 30.4],
-    [10, 20.4, 50],
 
-    [61, 70, 50],
-    [171, 30, 30]
-]
+function random() {
+    var builds = [];
 
-drawBuilds(builds);
-contour(builds);
+    var inputValue = document.getElementById('val').value;
+    if (inputValue) {
+        builds = JSON.parse(inputValue);
+    } else {
+        for (var i = 0; i < 5; i++) {
+            builds.push(getRandomBuild());
+        }
+    }
+
+    var context = canvas.getContext('2d');
+    context.clearRect (0 , 0 , CANVAS_WIDTH, CANVAS_HEIGHT);
+    context.restore();
+    drawBuilds(builds);
+    contour(builds);
+
+    document.getElementById('c').innerHTML = JSON.stringify(builds);
+}
+
+
+random();
+
 
 
 
