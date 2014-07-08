@@ -8,10 +8,10 @@ function getRectList(builds) {
     for (var i = 0; i < builds.length; i++) {
         result.push([
             [builds[i][0], 0],
-            [builds[i][0], builds[i][1]],
-            [builds[i][0] + builds[i][2], builds[i][1]],
-            [builds[i][0] + builds[i][2], 0]
-        ])
+            [builds[i][0], builds[i][2]],
+            [builds[i][1], builds[i][2]],
+            [builds[i][1], 0]
+        ]);
     }
 
     return result;
@@ -47,9 +47,9 @@ function drawBuilds(builds) {
     for (var i = 0; i < builds.length; i++) {
         context.beginPath();
         var x = builds[i][0];
-        var y = CANVAS_HEIGHT - builds[i][1];
-        var w = builds[i][2];
-        var h = builds[i][1];
+        var y = CANVAS_HEIGHT - builds[i][2];
+        var w = builds[i][1] - builds[i][0];
+        var h = builds[i][2];
         context.rect(x, y, w, h);
 
         context.lineWidth = 1;
@@ -94,7 +94,7 @@ function getCrossPoint(segment1, segment2) {
     var x = x1 + Ua * (x2 - x1);
     var y = y1 + Ua * (y2 - y1);
 
-    return [Math.floor(x), Math.floor(y)];
+    return [x, y];
 }
 
 function isOnePoint(point1, point2) {
@@ -254,25 +254,16 @@ function getRandomInt(min, max){
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
 function getRandomBuild() {
     var MIN_WIDTH = 30;
     var MIN_HEIGHT = 2
-    var result = [];
 
-    var left = getRandomInt(20, CANVAS_WIDTH - MIN_WIDTH);
-    result.push(left);
+    var x1 = getRandomInt(MIN_WIDTH, CANVAS_WIDTH - MIN_WIDTH);
+    var x2 = getRandomInt(x1 + MIN_WIDTH, CANVAS_WIDTH - MIN_WIDTH);
+    var height = getRandomInt(MIN_HEIGHT, CANVAS_HEIGHT - MIN_HEIGHT);
 
-    var width = getRandomInt(MIN_HEIGHT, CANVAS_HEIGHT);
-    result.push(width);
-
-
-    var maxWidth = (CANVAS_WIDTH - result[0] - 20);
-    result.push(getRandomInt(MIN_WIDTH, maxWidth));
-
-    return result;
+    return [x1, x2, height];
 }
-
 
 function random() {
     var builds = [];
@@ -294,7 +285,6 @@ function random() {
 
     document.getElementById('c').innerHTML = JSON.stringify(builds);
 }
-
 
 random();
 
