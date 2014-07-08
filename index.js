@@ -72,7 +72,6 @@ function getCrossPoint(segment1, segment2) {
     var y3 = segment2[0][1];
     var y4 = segment2[1][1];
 
-
     var aCH = ((x4-x3)*(y1-y3)-(y4-y3)*(x1-x3));
     var aZN = ((y4-y3)*(x2-x1)-(x4-x3)*(y2-y1));
     var bCH = ((x2-x1)*(y1-y3)-(y2-y1)*(x1-x3));
@@ -93,6 +92,20 @@ function getCrossPoint(segment1, segment2) {
 
     var x = x1 + Ua * (x2 - x1);
     var y = y1 + Ua * (y2 - y1);
+
+    if (x1 == x2) {
+        x = x1;
+    }
+    if (x3 == x4) {
+        x = x3
+    }
+
+    if (y1 == y2) {
+        y = y1;
+    }
+    if (y3 == y4) {
+        y = y4;
+    }
 
     return [x, y];
 }
